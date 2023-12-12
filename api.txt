@@ -1,0 +1,292 @@
+HTTP Headers (include in all request):
+{Accept}:         "Accept: application/json"
+{Content-Type}:   "Content-Type: application/json"
+{token}:          Token-upon-authentication
+{Authorization} : "Authorization: Bearer {token}"
+
+HTTP Headers (include in file-related [images] request):
+{Accept}:         "Accept: multipart/form-data"
+{Content-Type}:   "Content-Type: multipart/form-data"
+{token}:          Token-upon-authentication
+{Authorization} : "Authorization: Bearer {token}"
+
+
+
+Return Responses:
+200 - OK
+201 - Created
+204 - No Content
+401 - Unauthorized
+403 - Forbidden
+404 - Not Found
+
+NOTE: Ensure you pay attention to the HTTP method, some url paths have a different methods for GET, POST, PUT, DELETE.
+
+
+== Register User ==
+Method: POST
+URL: /api/actions/register
+Params: User Object in request body
+Roles: N/A (public)
+Note:
+1. This endpoint is used to register a new user.
+2. Role is ROLE_USER by default upon creation.
+
+Return: User account from DB
+        201 - Created
+
+Example: User creates account
+    URL: http://localhost:8080/api/actions/login
+    Request Body: Include a RegistrationDTO object in the request body with the following fields:
+        {
+            "firstName": "Charlie",
+            "lastName": "Chocolate",
+            "username": "Charlie",
+            "password": "password1",
+            "email": "Charlie@gmail.com"
+        }
+
+
+
+
+== Login User ==
+Method: POST
+URL: /api/actions/login
+Roles: N/A (public)
+Note:
+1. This endpoint handles user login. It accepts a request to log in a user.
+2. Validation is performed on the login data, and the response status depends on the result of the operation.
+
+Return: JwtToken
+        200 - OK
+
+Example: User with username 'Charlie' logins in
+    URL:  http://localhost:8080/api/actions/login
+    Request Body: Include a Login Data object in the request body with the following fields:
+        {
+            "username": "Charlie",
+            "password": "password1"
+        }
+
+
+== Logout User ==
+Method: POST
+URL: /api/actions/logout
+Roles: ROLE_ADMIN, ROLE_USER
+Note:
+1. This endpoint handles user login. It accepts a request to log in a user.
+2. Validation is performed on the login data, and the response status depends on the result of the operation.
+
+Return: 200 - OK
+
+Example: User with username 'Charlie' logins in
+    URL:  http://localhost:8080/api/actions/login
+    Request Body: Include a Login Data object in the request body with the following fields:
+        {
+            "username": "Charlie",
+            "password": "password1"
+        }
+
+
+
+***** GETTING USERS AND A VIEWING USER *****
+
+== Get All Users Except Authenticated ==
+Method: GET
+URL: /api/entities/users
+Roles: ROLE_ADMIN, ROLE_USER
+Note:
+1. This endpoint allows users to get list of other users.
+2. Does not include authenticated user in list
+
+Return: List<User>
+        200 - OK
+
+Example: Authenticated user retrieves a list of all users in the system, excluding themselves.
+    URL: http://localhost:8080/api/entities/users
+
+
+== Search Users by Username ==
+Method: GET
+URL: /api/entities/users/{username}
+Params: username to search for, if no users found, returns an appropriate message.
+Roles: ROLE_ADMIN, ROLE_USER
+Note:
+1. This endpoint allows users to search for users by their username.
+2. Does not include authenticated user in list
+
+Return: List<User> OR String
+        200 - OK
+
+Example: Logged-in user searches for users by username. Users with usernames starting with er are returned in a list.
+    URL: http://localhost:8080/api/actions/users/er
+
+
+
+***** FRIEND REQUEST API CALLS *****
+
+== Send Friend Request ==
+Method: POST
+URL: /api/entities/users/friend-requests/{recipient_id}
+Params: Recipient User ID
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to send a friend request to another user.
+
+Return: FriendRequest Object
+    201 - CREATED
+
+Example: Logged in user sends friends request to user with userId 2
+    URL: http://localhost:8080/api/entities/users/friend-requests/2 (This can be retrieved from the getUsers endpoint)
+
+
+
+== Remove Friend Request ==
+Method: DELETE
+URL: /api/entities/users/friend-requests/{recipient_id}
+Params: Recipient User ID
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to cancel a friend request made.
+
+Return: 204 - NO_CONTENT
+
+Example: Logged in user removes friend request to user with userId 2
+    URL: http://localhost:8080/api/entities/users/friend-requests/2
+
+== Get Friend Requests ==
+Method: GET
+URL: /api/entities/friend-requests
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to view friend requests.
+
+Return: List<FriendRequest>
+    200 - OK
+
+Example: Logged views friend requests
+    URL: http://localhost:8080/api/entities/friend-requests
+
+
+== Accept Friend Request ==
+Method: PUT
+URL: /api/entities/friend-requests/{request_id}
+Params: Friend Request ID
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to accept incoming friend requests.
+2. This returns a success message and creates two friendship objects.
+
+Return: 200 - OK
+
+Example: Authenticated user accepts friend request.
+    URL: http://localhost:8080/api/entities/friend-requests/2 (this can be retrieved from the list from getFriendRequests endpoint)
+
+
+== Deny Friend Request ==
+Method: DELETE
+URL: /api/entities/friend-requests/{request_id}
+Params: Friend Request ID
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to accept deny friend requests.
+
+Return: 204 - NO_CONTENT
+
+Example: Logged views friend requests
+    URL: http://localhost:8080/api/entities/friend-requests/2
+
+
+
+***** FRIENDS/FRIENDSHIP *****
+
+
+== Get Friends ==
+Method: GET
+URL: /api/entities/users/friends
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to retrieve a list of their friends.
+
+Return: List<User>
+        200 - OK
+
+Example: Authenticated user retrieves their list of friends
+    URL: http://localhost:8080/api/entities/users/friends
+
+
+== Get Friend ==
+Method: GET
+URL: /api/entities/users/friends/{friend_user}
+Params: friend_user (User object)
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to retrieve details of a specific friend.
+
+Return: User
+
+200 - OK
+Example: Authenticated user retrieves details of a specific friend with userId 2
+    URL: http://localhost:8080/api/entities/users/friends/2
+
+== Remove Friend ==
+Method: DELETE
+URL: /api/entities/users/friends/{friend_user}
+Params: friend_user (User object) **basically just send back one of the user objects from the getFriends
+Roles: ROLE_USER, ROLE_ADMIN
+Note:
+1. This endpoint allows a user to remove a friend from their friends list.
+
+Return: 204 - NO_CONTENT
+
+Example: Authenticated user removes a friend with userId 2 from their friends list
+    URL: http://localhost:8080/api/entities/users/friends/2
+
+
+
+
+***** AVATAR *****
+
+
+== Upload AvatarPreview ==
+Method: POST
+URL: /api/images/upload/avatar
+Params: MultipartFile - uploaded image
+Roles: ROLE_ADMIN, ROLE_USER
+Note:
+1. This endpoint allows users with ROLE_ADMIN or ROLE_USER to upload their avatars.
+2. The request should include a multipart file named 'file' representing the avatar image.
+
+Return: AvatarPreview (object)
+        200 - OK
+
+Example: User with ROLE_USER uploads an avatar
+    URL:  http://localhost:8080/api/images/upload/avatar
+    Request: A POST request with a multipart file named 'file' containing the avatar image.
+
+== Get AvatarPreview ==
+Method: GET
+URL: /api/images/avatar
+Roles: ROLE_ADMIN, ROLE_USER
+Note:
+1. This endpoint allows users with ROLE_ADMIN or ROLE_USER to retrieve their avatars.
+
+Return: AvatarPreview Image (byte[])
+        200 - OK
+
+Example: User with ROLE_USER retrieves their avatar
+    URL:  http://localhost:8080/api/images/avatar
+    Request: A GET request to retrieve the user's avatar image.
+
+== Delete AvatarPreview ==
+Method: DELETE
+URL: /api/images/avatar
+Roles: ROLE_ADMIN, ROLE_USER
+Note:
+1. This endpoint allows users with ROLE_ADMIN or ROLE_USER to delete their avatars.
+
+Return: 204 - No Content
+
+Example: User with ROLE_USER deletes their avatar
+    URL:  http://localhost:8080/api/images/avatar
+    Request: A DELETE request to delete the user's avatar.
